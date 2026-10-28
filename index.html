@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PyroGuard Cloud - Outdoor Fire Disaster Warning & Incident Command</title>
+  <meta name="description" content="Outdoor Cloud Integrated Fire Disaster Warning System with Google Maps interface, sensor fleet simulation (SHT31, DS18B20, PM2.5, Thermal PTZ, AI Vision, WS68 Anemometer), citizen reporting, and admin verification command.">
+
+  <!-- Google Fonts: Outfit (Tactical & Headings) & Inter (UI) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Leaflet.js Mapping Library (Google Maps styled tile support) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Application Stylesheet (Bright Daylight Tactical Theme) -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ========================================================
+       DEDICATED FULL-PAGE GOOGLE AUTHENTICATION LOGIN GATEWAY
+       Mandatory Gatekeeper: Access to Dashboard is locked until signed in
+       ======================================================== -->
+  <div id="loginGatekeeperPortal" class="login-gatekeeper-portal">
+    <div class="login-gatekeeper-box">
+      <div class="gk-crest-header">
+        <div class="gk-crest-emblem">🇮🇳</div>
+        <div class="gk-gov-title">
+          <div class="gk-gov-main">GOVERNMENT OF INDIA • DISASTER MANAGEMENT DIVISION</div>
+          <div class="gk-gov-sub">Ministry of Environment, Forest & Climate Change | NDMA South Zone Command</div>
+          <div class="gk-gov-region">Western Ghats Nilgiri Biosphere Fire Warning System (Karnataka • Kerala • Tamil Nadu)</div>
+        </div>
+      </div>
+
+      <div class="gk-portal-card">
+        <div class="gk-brand-row">
+          <div class="gk-brand-icon">🔥</div>
+          <div>
+            <h2>PyroGuard Cloud Access Portal</h2>
+            <p>Cloud IoT Integrated Multi-Sensor Telemetry & Satellite Wildfire Early Warning</p>
+          </div>
+        </div>
+
+        <div class="gk-auth-notice">
+          <span>🔒</span>
+          <span>Authentication Required: Please sign in with your authorized Google Account to access telemetry streams, sensor simulations, and incident verification command.</span>
+        </div>
+
+        <!-- 1-Click Fast Google Sign-In Action -->
+        <button type="button" class="gk-google-btn" id="gkGoogleOAuthBtn" onclick="PyroAuth.loginViaGatekeeper('admin')">
+          <svg class="google-icon-svg" viewBox="0 0 24 24" style="width:22px; height:22px;">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span>Continue with Google (1-Click Incident Commander)</span>
+        </button>
+
+        <div class="gk-divider">
+          <span>OR SELECT PRE-CONFIGURED ROLE</span>
+        </div>
+
+        <div class="gk-profiles-grid">
+          <div class="gk-profile-card selected" data-profile="admin" onclick="PyroAuth.selectGatekeeperProfile('admin')">
+            <div class="gk-card-top">
+              <span class="gk-badge admin">ADMIN / COMMANDER</span>
+              <span class="gk-check">✓</span>
+            </div>
+            <h4>DFO Ananya Rao</h4>
+            <div class="gk-desc">Divisional Forest Officer (Nilgiri Biosphere Ops)</div>
+            <div class="gk-perm">Full Incident Approval, Siren & Drone Dispatch</div>
+          </div>
+
+          <div class="gk-profile-card" data-profile="citizen" onclick="PyroAuth.selectGatekeeperProfile('citizen')">
+            <div class="gk-card-top">
+              <span class="gk-badge citizen">CITIZEN / OBSERVER</span>
+              <span class="gk-check">✓</span>
+            </div>
+            <h4>Ramesh Kumar</h4>
+            <div class="gk-desc">Plantation Supervisor (Wayanad Estate Border)</div>
+            <div class="gk-perm">Sensor Monitoring & Eyewitness Fire Reporting</div>
+          </div>
+        </div>
+
+        <div class="gk-manual-form">
+          <div class="form-group">
+            <label for="gkEmailInput">Google Account Identity</label>
+            <input type="email" id="gkEmailInput" class="form-control" value="a.rao@forest.gov.in">
+          </div>
+          <div class="form-group">
+            <label for="gkRoleSelect">System Role</label>
+            <select id="gkRoleSelect" class="form-control">
+              <option value="admin">DFO / Incident Commander (Admin Authorization)</option>
+              <option value="citizen">Estate Supervisor / Field Observer (Citizen Reporting)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="gkApiKeyInput">Google Cloud / Maps API Key (Pre-Authorized)</label>
+            <input type="text" id="gkApiKeyInput" class="form-control" value="AIzaSyD-SouthIndia-WesternGhats2026">
+          </div>
+        </div>
+
+        <div id="gkAuthStatusMessage" class="gk-status-msg" style="display:none;"></div>
+
+        <button type="button" class="btn-primary gk-submit-btn" id="gkSubmitBtn" onclick="PyroAuth.loginViaGatekeeper()">
+          <span>🔑</span>
+          <span>Sign In & Unlock Incident Command Dashboard</span>
+        </button>
+
+        <div class="gk-footer-note">
+          Protected by Google Cloud Identity Services & Indian Forest Service Operational Protocols.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Container (Accessible only after Gatekeeper Sign-in) -->
+  <div id="appDashboardContainer" style="display:none;">
+
+  <!-- Top Application Header -->
+  <header class="app-header">
+    <div class="header-top">
+      <div class="brand-section">
+        <div class="brand-icon-wrapper">
+          <div class="brand-pulse"></div>
+          <span>🔥</span>
+        </div>
+        <div class="brand-title-group">
+          <h1>
+            PyroGuard Cloud
+            <span class="cloud-badge">Cloud IoT Integrated</span>
+          </h1>
+          <div class="brand-subtitle">South India Western Ghats Wildfire & Agricultural Disaster Warning Command</div>
+        </div>
+      </div>
+
+      <div class="header-status-strip">
+        <div class="status-pill">
+          <span class="status-dot"></span>
+          <span>Cloud Core: <strong>Connected</strong></span>
+        </div>
+        <div class="status-pill">
+          <span>Active Stations: <strong>5 / 5 Online (Nilgiris)</strong></span>
+        </div>
+
+        <!-- Google Key Authentication & User Badge -->
+        <div id="headerUnauthContainer" style="display:none; align-items:center; gap:0.5rem;">
+          <button class="btn-sign-in-pill" id="headerSignInBtn" onclick="PyroAuth.openAuthModal()">
+            <svg class="google-icon-svg" viewBox="0 0 24 24" style="width:18px; height:18px;">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>Sign In with Google</span>
+          </button>
+        </div>
+
+        <div class="auth-container" id="headerAuthContainer">
+          <button class="google-auth-btn" id="googleAuthBtn" title="Google Account Profile & Settings">
+            <svg class="google-icon-svg" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span id="authUserName">DFO Ananya Rao</span>
+          </button>
+
+          <span class="role-pill admin" id="authUserRolePill">ADMIN</span>
+          <button class="role-switch-btn" id="roleSwitchBtn" onclick="PyroAuth.toggleRole()">Switch Role</button>
+          <button class="btn-sign-out" onclick="PyroAuth.logout()" title="Sign Out of Session">🚪 Sign Out</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="header-nav">
+      <ul class="nav-tabs">
+        <li>
+          <button class="nav-tab-btn active" data-tab="map">
+            <span>🗺️</span>
+            <span>Live Fire Ops Map</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" data-tab="simulation">
+            <span>📡</span>
+            <span>IoT Sensor Fleet & Simulation</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" data-tab="report">
+            <span>📝</span>
+            <span>Report Fire Accident</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" data-tab="admin">
+            <span>🛡️</span>
+            <span>Admin Incident Command</span>
+            <span class="badge-counter" id="adminPendingBadge">1</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" data-tab="cloud">
+            <span>☁️</span>
+            <span>Cloud Logs & Hardware Specs</span>
+          </button>
+        </li>
+      </ul>
+
+      <div class="nav-quick-actions">
+        <button class="btn-primary" onclick="PyroApp.triggerInstantFireDemo()">
+          <span>⚡</span>
+          <span>Simulate Fire Outbreak</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Emergency Banner Ticker -->
+  <div class="emergency-banner" id="emergencyBanner">
+    <div class="banner-left">
+      <span class="siren-icon">🚨</span>
+      <span id="emergencyBannerText">ALERT: Smoke & Heat Spike detected in Sulthan Bathery Agro Plantation (Wayanad, Kerala). DFO verification in progress.</span>
+    </div>
+    <div class="banner-actions">
+      <button class="btn-banner-action" onclick="PyroAdmin.stopEmergencySiren()">Mute Siren</button>
+      <button class="btn-banner-action" onclick="PyroApp.switchTab('map')">View Map Evacuation</button>
+    </div>
+  </div>
+
+  <!-- Main Viewport Panes -->
+  <main class="main-viewport">
+
+    <!-- ========================================================
+         TAB 1: LIVE FIRE OPS MAP (SOUTH INDIA SATELLITE & TERRAIN)
+         ======================================================== -->
+    <div class="tab-pane active" id="tabPane-map">
+      <div class="map-view-container">
+
+        <!-- Map Container -->
+        <div class="map-wrapper">
+          <div id="fireMap"></div>
+
+          <!-- Quick-Check Navigation Bar Across Top of Map -->
+          <div class="map-quick-check-bar" id="mapQuickCheckBar">
+            <div class="quick-check-title">
+              <span>🔍 Check South India Node:</span>
+            </div>
+            <button class="quick-check-btn" data-station-id="ST-101" onclick="PyroMap.checkStationOnMap('ST-101')" title="Bandipur National Forest Boundary, Karnataka">
+              <span>📡 ST-101 Bandipur</span>
+            </button>
+            <button class="quick-check-btn active" data-station-id="ST-204" onclick="PyroMap.checkStationOnMap('ST-204')" title="Wayanad Agro Plantation & Coffee Estate, Kerala">
+              <span>📡 ST-204 Wayanad</span>
+            </button>
+            <button class="quick-check-btn" data-station-id="ST-309" onclick="PyroMap.checkStationOnMap('ST-309')" title="Mudumalai Sanctuary & Teak Reserve, Tamil Nadu">
+              <span>📡 ST-309 Mudumalai</span>
+            </button>
+            <button class="quick-check-btn" data-station-id="ST-412" onclick="PyroMap.checkStationOnMap('ST-412')" title="Nilgiri Foothills & Tea Garden Outpost, Gudalur">
+              <span>📡 ST-412 Nilgiris</span>
+            </button>
+            <button class="quick-check-btn" data-station-id="ST-505" onclick="PyroMap.checkStationOnMap('ST-505')" title="Moyar River Gorge & Scrubland, Karnataka-TN Border">
+              <span>📡 ST-505 Moyar Gorge</span>
+            </button>
+            <button class="quick-check-btn incident-btn" data-incident-id="INC-9481" onclick="PyroMap.checkIncidentOnMap('INC-9481')" title="Wayanad Coffee Estate Border Fire">
+              <span>🔥 Check Fire INC-9481</span>
+            </button>
+          </div>
+
+          <!-- Floating Layer Controls -->
+          <div class="map-floating-panel">
+            <div class="map-title-row">
+              <span>ACTIVE MONITORING LAYERS</span>
+              <span style="font-size:0.7rem; color:#64748b;">5 Nodes Active</span>
+            </div>
+            <div class="layer-toggles-row">
+              <button class="layer-pill active" data-layer="stations">📡 Sensor Stations</button>
+              <button class="layer-pill active" data-layer="wind">💨 Wind Spread Cones</button>
+              <button class="layer-pill active" data-layer="evacuation">⭕ Evacuation Rings</button>
+              <button class="layer-pill active" data-layer="incidents">🔥 Fire Incidents</button>
+            </div>
+          </div>
+
+          <!-- Map Style Selector (Google Satellite Hybrid & Outdoor Terrain 3D) -->
+          <div class="map-style-selector">
+            <button class="map-style-btn active" data-style="google_satellite" onclick="PyroMap.switchTileStyle('google_satellite')">
+              <span>🛰️ Satellite Hybrid</span>
+            </button>
+            <button class="map-style-btn" data-style="google_terrain" onclick="PyroMap.switchTileStyle('google_terrain')">
+              <span>⛰️ Outdoor Terrain 3D</span>
+            </button>
+          </div>
+
+          <!-- Live Checking HUD on Map -->
+          <div class="map-live-inspection-hud" id="mapLiveCheckingHud" style="display:none;"></div>
+        </div>
+
+        <!-- Sidebar: Active Station Telemetry Overview -->
+        <aside class="map-sidebar">
+          <div class="sidebar-header">
+            <h2>Sensor Stations Fleet</h2>
+            <p>Select any outdoor node to inspect live microclimate & fire indicators</p>
+          </div>
+          <div class="sidebar-content" id="sidebarStationList">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </aside>
+
+      </div>
+    </div>
+
+    <!-- ========================================================
+         TAB 2: SENSOR FLEET SIMULATION CONSOLE
+         ======================================================== -->
+    <div class="tab-pane" id="tabPane-simulation">
+      <div class="simulation-container">
+
+        <!-- Hardware & Field Photo Header Banner -->
+        <div style="background:#ffffff; border:1px solid var(--border-light); border-radius:var(--radius-lg); padding:1rem 1.5rem; display:flex; align-items:center; gap:1.5rem; box-shadow:var(--shadow-sm);">
+          <img src="assets/station_hardware.jpg" alt="Outdoor IoT Weather & Fire Station" style="width:140px; height:90px; object-fit:cover; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+          <div>
+            <h3 style="font-family:var(--font-heading); font-size:1.15rem; font-weight:700;">Outdoor IoT Sensor Station Architecture</h3>
+            <p style="font-size:0.82rem; color:var(--text-secondary); margin-top:2px;">
+              Engineered specifically for outdoor environments (forests, farms, orchards, gardens) to withstand direct sunlight, wind, and rain without false alarms. Combines temperature/humidity, soil probe, particulate smoke, radiometric thermal camera, AI vision, and anemometer.
+            </p>
+          </div>
+        </div>
+
+        <!-- Scenario Controller Card -->
+        <div class="scenario-controller-card">
+          <div class="scenario-header-row">
+            <div class="scenario-title-group">
+              <h2>Outdoor Fire Hazard Simulation Deck</h2>
+              <p>Simulate changing weather, drought heatwaves, soil fires, or conflagrations in real-time</p>
+            </div>
+            <div class="preset-buttons-group">
+              <button class="preset-btn" data-preset="normal">
+                <span>🟢</span>
+                <span>Normal Spring Day</span>
+              </button>
+              <button class="preset-btn active" data-preset="heatwave">
+                <span>🟡</span>
+                <span>Extreme Heatwave / Drought</span>
+              </button>
+              <button class="preset-btn" data-preset="smoldering">
+                <span>🟠</span>
+                <span>Subsurface Soil Smolder</span>
+              </button>
+              <button class="preset-btn" data-preset="wildfire">
+                <span>🔴</span>
+                <span>Catastrophic Wildfire</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Interactive Manual Sliders -->
+          <div class="slider-controls-grid">
+            <div class="slider-group">
+              <div class="slider-label-row">
+                <span>SHT31 Air Temperature</span>
+                <span class="slider-val-tag" id="tagAirTemp">34.8°C</span>
+              </div>
+              <input type="range" id="sliderAirTemp" min="10" max="75" step="0.5" value="34.8">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-label-row">
+                <span>SHT31 Air Humidity</span>
+                <span class="slider-val-tag" id="tagHumidity">22%</span>
+              </div>
+              <input type="range" id="sliderHumidity" min="5" max="95" step="1" value="22">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-label-row">
+                <span>DS18B20 Soil Temperature</span>
+                <span class="slider-val-tag" id="tagSoilTemp">38.6°C</span>
+              </div>
+              <input type="range" id="sliderSoilTemp" min="10" max="90" step="0.5" value="38.6">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-label-row">
+                <span>Smoke (PM2.5 Density)</span>
+                <span class="slider-val-tag" id="tagSmoke">88.5 µg/m³</span>
+              </div>
+              <input type="range" id="sliderSmoke" min="5" max="450" step="1" value="88.5">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-label-row">
+                <span>WS68 Wind Speed</span>
+                <span class="slider-val-tag" id="tagWindSpeed">28.4 km/h</span>
+              </div>
+              <input type="range" id="sliderWindSpeed" min="0" max="70" step="1" value="28.4">
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Visual Condition Engine Card -->
+        <div class="dynamic-visual-switcher-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+            <div>
+              <h3 style="font-family:var(--font-heading); font-size:1.05rem; font-weight:700;">Dynamic Visual Condition Engine</h3>
+              <p style="font-size:0.78rem; color:var(--text-muted);">Real-time visual changes occur immediately for every change in temp, wind, smoke, and soil fire conditions</p>
+            </div>
+            <div id="activeVisualStateIndicator" class="visual-state-tag warning">
+              <strong>Active Visual:</strong> Moderate Agricultural Brush Fire
+            </div>
+          </div>
+          <div class="quick-visual-buttons-row">
+            <button type="button" class="quick-vis-btn gale" onclick="document.getElementById('sliderWindSpeed').value=45; document.getElementById('sliderWindSpeed').dispatchEvent(new Event('input'));">
+              💨 High Winds (Gale 45 km/h)
+            </button>
+            <button type="button" class="quick-vis-btn danger" onclick="PyroSensors.applyPreset('wildfire');">
+              🔥 Huge Wildfire (20m Flames)
+            </button>
+            <button type="button" class="quick-vis-btn mild" onclick="PyroSensors.applyPreset('smoldering');">
+              🟡 Mild Ground Fire (< 1m / Less Fire)
+            </button>
+            <button type="button" class="quick-vis-btn safe" onclick="PyroSensors.applyPreset('normal');">
+              🟢 Clear Baseline
+            </button>
+          </div>
+        </div>
+
+        <!-- The 6 Explicit Sensors Showcase Grid -->
+        <div class="sensors-grid">
+
+          <!-- 1. SHT31 Weatherproof Temp & Humidity Sensor -->
+          <div class="sensor-detail-card">
+            <div class="sensor-card-banner">
+              <div class="sensor-identity">
+                <div class="sensor-icon-box">🌡️</div>
+                <div class="sensor-name-group">
+                  <h3>SHT31 Temp & Humidity</h3>
+                  <div class="sensor-hardware-tag">Sensirion SHT31-DIS | Weatherproof & Radiation Shielded</div>
+                </div>
+              </div>
+              <span class="meta-pill" style="color:var(--safe-green); font-weight:700;">Shielded (Anti-Sun Error)</span>
+            </div>
+
+            <div class="sensor-readings-deck">
+              <div class="primary-stat-row">
+                <span class="big-stat-number" id="val-sht31-temp">34.8</span>
+                <span class="big-stat-unit">°C</span>
+              </div>
+              <div class="sensor-meta-pills">
+                <span class="meta-pill">Relative Humidity: <strong id="val-sht31-hum">22.5% RH</strong></span>
+                <span class="meta-pill">Heat Index: <strong id="val-sht31-heatidx">35.2°C</strong></span>
+                <span class="meta-pill">Radiation Shield: <strong>Active (Solar Error < 0.2°C)</strong></span>
+              </div>
+            </div>
+
+            <div class="sensor-spec-box">
+              <strong>Outdoor Design Tip:</strong> Installed inside a multi-plate louvered radiation shield. Prevents direct sunlight from causing false high temperature spikes while allowing free natural aspiration airflow.
+            </div>
+          </div>
+
+          <!-- 2. DS18B20 Waterproof Temperature Probe -->
+          <div class="sensor-detail-card">
+            <div class="sensor-card-banner">
+              <div class="sensor-identity">
+                <div class="sensor-icon-box">🌱</div>
+                <div class="sensor-name-group">
+                  <h3>DS18B20 Soil Probe</h3>
+                  <div class="sensor-hardware-tag">Maxim Dallas 1-Wire | Stainless Steel Waterproof Probe</div>
+                </div>
+              </div>
+              <span class="meta-pill" style="font-weight:700;">15cm Subsurface Depth</span>
+            </div>
+
+            <div class="sensor-readings-deck">
+              <div class="primary-stat-row">
+                <span class="big-stat-number" id="val-ds18-temp">38.6</span>
+                <span class="big-stat-unit">°C</span>
+              </div>
+              <div class="sensor-meta-pills">
+                <span class="meta-pill" id="val-ds18-status">ELEVATED: Dry Mulch / Sun-Baked Soil</span>
+                <span class="meta-pill">Probe Enclosure: <strong>IP68 Hermetic Stainless 316</strong></span>
+              </div>
+
+              <!-- Interactive Subsurface Soil Strata Graphic -->
+              <div class="subsurface-soil-strata dry" id="subsurfaceSoilStrata">
+                <div class="soil-layer surface">Surface Fallen Leaf Litter (0cm)</div>
+                <div class="soil-layer organic">Organic Peat & Decomposing Mulch (5cm)</div>
+                <div class="soil-layer rootzone">
+                  <div class="probe-indicator-needle">📍 DS18B20 Stainless Probe (15cm)</div>
+                  <span class="rootzone-label">Root Zone & Subsurface Horizon</span>
+                </div>
+                <div class="soil-layer bedrock">Weathered Granitic Substrata (30cm)</div>
+              </div>
+              <div id="soilLayerStatusText" style="font-size:0.75rem; color:var(--text-secondary); margin-top:4px;">
+                🟡 <strong>15cm Probe: 38.6°C</strong> — Baked Dry Organic Mulch / Desiccation
+              </div>
+            </div>
+
+            <div class="sensor-spec-box">
+              <strong>Subsurface Fire Detection:</strong> Monitors ground mulch, peat, and organic root temperature. Critical in forests and agricultural land to catch smoldering underground fires before flames break through the surface.
+            </div>
+          </div>
+
+          <!-- 3. Outdoor Smoke & Particulate Sensor -->
+          <div class="sensor-detail-card">
+            <div class="sensor-card-banner">
+              <div class="sensor-identity">
+                <div class="sensor-icon-box">💨</div>
+                <div class="sensor-name-group">
+                  <h3>Outdoor Particulate Sensor</h3>
+                  <div class="sensor-hardware-tag">Laser Optical Particle Counter | Weather-Protected Inlet</div>
+                </div>
+              </div>
+              <span class="meta-pill" id="val-smoke-aqi">AQI: 138 (Elevated Particulates)</span>
+            </div>
+
+            <div class="sensor-readings-deck">
+              <div class="primary-stat-row">
+                <span class="big-stat-number warning" id="val-smoke-pm25">88.5</span>
+                <span class="big-stat-unit">µg/m³ PM2.5</span>
+              </div>
+              <div class="sensor-meta-pills">
+                <span class="meta-pill">PM10 Coarse Dust: <strong id="val-smoke-pm10">142.0 µg/m³</strong></span>
+                <span class="meta-pill">Insect & Rain Deflector: <strong>Mesh Heated Inlet</strong></span>
+                <span class="meta-pill">Dust vs Smoke Discriminator: <strong>Active</strong></span>
+              </div>
+            </div>
+
+            <div class="sensor-spec-box">
+              <strong>Outdoor Weather Protection:</strong> Equipped with a cyclone pre-separator and heated inlet duct to avoid condensation triggering false positive smoke alarms during foggy mornings.
+            </div>
+          </div>
+
+          <!-- 4. Thermal Camera (640x512 Radiometric 15km PTZ) -->
+          <div class="sensor-detail-card">
+            <div class="sensor-card-banner">
+              <div class="sensor-identity">
+                <div class="sensor-icon-box">🎯</div>
+                <div class="sensor-name-group">
+                  <h3>Radiometric Thermal Camera</h3>
+                  <div class="sensor-hardware-tag">Uncooled VOx Microbolometer | 640×512 PTZ 15km Range</div>
+                </div>
+              </div>
+              <span class="meta-pill danger" id="val-thermal-status" style="font-weight:700;">HOTSPOT ALARM: Radiometric Spike</span>
+            </div>
+
+            <div class="camera-viewport-frame">
+              <img src="assets/thermal_cam.jpg" alt="Thermal Camera Hotspot View" class="camera-img-feed" id="thermalCameraImg">
+              <div class="thermal-crosshair-target" id="thermalCrosshair"></div>
+              <div class="camera-hud-overlay">
+                <div class="hud-top-bar">
+                  <span>RAD_THERM PTZ #02</span>
+                  <span>SPOT MAX: <span id="val-thermal-spot">165.0</span>°C</span>
+                  <span>ZOOM: 12.5x</span>
+                </div>
+                <div style="font-family:monospace; font-size:0.75rem; color:#fef08a; text-shadow:0 1px 2px #000;">
+                  CROSSHAIR TARGET: [11.6680° N, 76.2850° E] (Wayanad Border)
+                </div>
+              </div>
+            </div>
+
+            <div class="sensor-spec-box">
+              <strong>Distance Detection:</strong> Scans up to 15km across hills, plantations, and forest boundaries to pinpoint heat signatures even before visible flames emerge through dense tree canopies.
+            </div>
+          </div>
+
+          <!-- 5. Outdoor AI Camera with Smoke/Flame Detection -->
+          <div class="sensor-detail-card">
+            <div class="sensor-card-banner">
+              <div class="sensor-identity">
+                <div class="sensor-icon-box">📷</div>
+                <div class="sensor-name-group">
+                  <h3>Outdoor AI Vision Camera</h3>
+                  <div class="sensor-hardware-tag">4K Solar Optical PTZ | On-Device Deep Learning Inference</div>
+                </div>
+              </div>
+              <span class="meta-pill" style="color:var(--fire-red); font-weight:700;">AI Active</span>
+            </div>
+
+            <div class="camera-viewport-frame" id="aiCameraContainer">
+              <img src="assets/ai_vision_cam.jpg" alt="AI Smoke Camera Surveillance" class="camera-img-feed" id="aiVisionCameraImg">
+              <div class="camera-dynamic-badge warning" id="cameraDynamicStatusBadge">
+                ⚠️ ACTIVE BRUSH & LEAF LITTER FLAME | BILLOWING SMOKE COLUMN
+              </div>
+              <div class="camera-smoke-haze" id="cameraSmokeHaze"></div>
+              <div class="camera-wind-streaks" id="cameraWindStreaks"></div>
+              <div class="camera-heat-shimmer" id="cameraHeatShimmer"></div>
+              <div class="camera-hud-overlay">
+                <div class="hud-top-bar">
+                  <span>AI_CCTV_CAM_CH01</span>
+                  <span>30 FPS | 4K HDR</span>
+                  <span>INFERENCE: 18ms</span>
+                </div>
+                <div class="ai-bounding-box" id="aiVisionBoundingBox" style="top:25px; right:160px; width:130px; height:120px;">
+                  <span class="ai-tag warning">SMOKE 91.2%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="sensor-readings-deck" style="margin-top:0.25rem;">
+              <div class="sensor-meta-pills">
+                <span class="meta-pill">Active Flame Confidence: <strong id="val-ai-flame">84.5%</strong></span>
+                <span class="meta-pill">Smoke Column Confidence: <strong id="val-ai-smoke">91.2%</strong></span>
+                <span class="meta-pill">False Positive Filter (Clouds): <strong>Active</strong></span>
+              </div>
+            </div>
+
+            <div class="sensor-spec-box">
+              <strong>Wide Area Coverage:</strong> Employs a convolutional neural network trained on outdoor wildfire datasets to detect rising smoke plumes and flickering flames over large acreage.
+            </div>
+          </div>
+
+            <div class="sensor-readings-deck" style="margin-top:0.25rem;">
+              <div class="sensor-meta-pills">
+                <span class="meta-pill">Active Flame Confidence: <strong id="val-ai-flame">84.5%</strong></span>
+                <span class="meta-pill">Smoke Column Confidence: <strong id="val-ai-smoke">91.2%</strong></span>
+                <span class="meta-pill">False Positive Filter (Clouds): <strong>Active</strong></span>
+              </div>
+            </div>
+
+            <div class="sensor-spec-box">
+              <strong>Wide Area Coverage:</strong> Employs a convolutional neural network trained on outdoor wildfire datasets to detect rising smoke plumes and flickering flames over large acreage.
+            </div>
+          </div>
+
+          <!-- 6. Wind Speed & Direction Sensor (Anemometer WS68) -->
+          <div class="sensor-detail-card">
+            <div class="sensor-card-banner">
+              <div class="sensor-identity">
+                <div class="sensor-icon-box">🧭</div>
+                <div class="sensor-name-group">
+                  <h3>Wind Anemometer (WS68)</h3>
+                  <div class="sensor-hardware-tag">Ultrasonic / Cup Anemometer | Solar Powered Wireless</div>
+                </div>
+              </div>
+              <span class="meta-pill" style="font-weight:700;">Spread Physics Active</span>
+            </div>
+
+            <div class="anemometer-flex">
+              <div class="wind-compass-dial">
+                <div class="compass-needle" id="anemometerNeedle" style="transform: rotate(195deg);"></div>
+                <span style="position:absolute; top:2px; font-size:0.65rem; font-weight:700; color:#64748b;">N</span>
+                <span style="position:absolute; bottom:2px; font-size:0.65rem; font-weight:700; color:#64748b;">S</span>
+                <span style="position:absolute; left:4px; font-size:0.65rem; font-weight:700; color:#64748b;">W</span>
+                <span style="position:absolute; right:4px; font-size:0.65rem; font-weight:700; color:#64748b;">E</span>
+              </div>
+
+              <div class="sensor-readings-deck">
+                <div class="primary-stat-row">
+                  <span class="big-stat-number" id="val-wind-speed">28.4</span>
+                  <span class="big-stat-unit">km/h</span>
+                </div>
+                <div class="sensor-meta-pills">
+                  <span class="meta-pill">Direction: <strong id="val-wind-dir">SSW (195°)</strong></span>
+                  <span class="meta-pill">Peak Gust: <strong id="val-wind-gust">36.2 km/h</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="sensor-spec-box">
+              <strong>Fire Spread Modeling:</strong> Wind speed and azimuth directly drive the real-time flame propagation ellipses and evacuation vector calculations rendered on the interactive map.
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================================
+         TAB 3: CITIZEN FIRE ACCIDENT REPORTING HUB
+         ======================================================== -->
+    <div class="tab-pane" id="tabPane-report">
+      <div class="report-view-container">
+
+        <form class="report-card-form" id="fireReportForm">
+          <div class="form-header">
+            <h2>
+              <span>🚨</span>
+              <span>Report Outdoor Fire Incident</span>
+            </h2>
+            <p>Direct citizen eyewitness reporting for gardens, farmlands, orchards, and forest boundaries.</p>
+          </div>
+
+          <div class="form-grid">
+
+            <div class="form-group full-width">
+              <label for="reportLocationName">Incident Location / Area Name *</label>
+              <input type="text" id="reportLocationName" class="form-control" placeholder="e.g. Sulthan Bathery Coffee Estate & Forest Border (Wayanad, Kerala)" value="Sulthan Bathery Coffee Estate & Forest Border (Wayanad, Kerala)" required>
+            </div>
+
+            <div class="form-group">
+              <label for="reportLat">Latitude (GPS)</label>
+              <input type="number" step="0.0001" id="reportLat" class="form-control" value="11.6680">
+            </div>
+
+            <div class="form-group">
+              <label for="reportLng">Longitude (GPS)</label>
+              <input type="number" step="0.0001" id="reportLng" class="form-control" value="76.2850">
+            </div>
+
+            <div class="form-group full-width" style="display:flex; flex-direction:row; align-items:center; justify-content:space-between; background:#f8fafc; padding:0.6rem 1rem; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+              <span id="reportLocationNote" style="font-size:0.8rem; color:var(--text-muted);">
+                GPS coordinates set for Zone B (Sulthan Bathery Agro-Forest Border, Wayanad).
+              </span>
+              <button type="button" class="btn-secondary" id="pinMapToggleBtn" style="padding:0.35rem 0.75rem; font-size:0.78rem;">
+                📍 Pin Location on Map
+              </button>
+            </div>
+
+            <div class="form-group">
+              <label for="reportFireType">Fire Classification *</label>
+              <select id="reportFireType" class="form-control">
+                <option value="Agricultural Estate & Forest Border">Agricultural Estate & Forest Border (Coffee/Tea)</option>
+                <option value="Forest / Timber Canopy">Deciduous & Shola Forest Canopy</option>
+                <option value="Agricultural Crop / Farm Fire">Paddy Stubble & Farm Residue</option>
+                <option value="Compost & Garden Mulch">Compost & Organic Waste</option>
+                <option value="Grassland / Scrub Fire">Moyar Valley Dry Scrub Fire</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="reportSeverity">Estimated Hazard Urgency *</label>
+              <select id="reportSeverity" class="form-control">
+                <option value="High Hazard - Spreading rapidly">High Hazard - Spreading rapidly</option>
+                <option value="Critical Outbreak - Structural Threat">Critical Outbreak - Structural Threat</option>
+                <option value="Medium Hazard - Contained in spot">Medium Hazard - Contained in spot</option>
+                <option value="Low - Smoldering brush only">Low - Smoldering brush only</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="reportSmokeColor">Observed Smoke Characteristic</label>
+              <select id="reportSmokeColor" class="form-control">
+                <option value="Grey / Billowing Leaf Litter Smoke">Grey / Billowing Leaf Litter Smoke</option>
+                <option value="Pitch Black / Dense Fuel Combustion">Pitch Black / Dense Fuel Combustion</option>
+                <option value="White / Thin Vapor or Steam">White / Thin Vapor or Steam</option>
+                <option value="Yellow / Chemical or Fertilizer Smolder">Yellow / Chemical or Fertilizer Smolder</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="reportFlameHeight">Visible Flame Height</label>
+              <select id="reportFlameHeight" class="form-control">
+                <option value="1.5m to 2.5m active flame">1.5m to 2.5m active flame</option>
+                <option value="Under 1 meter (Ground crawl)">Under 1 meter (Ground crawl)</option>
+                <option value="Over 4 meters (Tree crown flames)">Over 4 meters (Tree crown flames)</option>
+                <option value="No visible flame (Heavy smoke only)">No visible flame (Heavy smoke only)</option>
+              </select>
+            </div>
+
+            <!-- Photographic Evidence & AI Pre-Screen -->
+            <div class="form-group full-width">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <label>Photographic Evidence</label>
+                <button type="button" onclick="PyroReports.useSamplePhoto()" style="background:none; border:none; color:var(--google-blue); font-size:0.78rem; font-weight:600; cursor:pointer;">
+                  📷 Load Eyewitness Sample Photo
+                </button>
+              </div>
+
+              <input type="file" id="reportPhotoInput" accept="image/*" style="display:none;">
+
+              <div class="photo-upload-zone" id="photoUploadZone">
+                <span style="font-size:1.8rem;">📸</span>
+                <div style="font-size:0.85rem; font-weight:600; color:var(--text-main);">Click to Upload Field Image or Smartphone Photo</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Cloud Vision AI automatically analyzes photo for flame & smoke signatures</div>
+              </div>
+
+              <div class="photo-preview-box" id="photoPreviewBox" style="display:block;">
+                <img src="assets/sample_report.jpg" id="photoPreviewImg" alt="Field Fire Photo Evidence">
+                <div class="ai-prescreen-badge" id="aiPrescreenBadge">
+                  <span>🔥 Flame Detected: 94.2%</span>
+                  <span style="margin:0 4px;">|</span>
+                  <span>💨 Smoke Plume: 97.6%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="reportNotes">Field Description & Access Road Notes</label>
+              <textarea id="reportNotes" class="form-control" placeholder="Describe flame speed, nearest landmarks, water sources, or access gates...">Dry coffee pruning mulch and forest boundary trench brush caught fire near the Cheeral road border. Easterly wind is pushing heavy smoke toward plantation worker quarters. Immediate containment needed.</textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="reportReporterName">Your Name</label>
+              <input type="text" id="reportReporterName" class="form-control" value="Ramesh Kumar (Estate Plantation Supervisor)">
+            </div>
+
+            <div class="form-group">
+              <label for="reportReporterContact">Emergency Phone / Email</label>
+              <input type="text" id="reportReporterContact" class="form-control" value="+91 98450 12839">
+            </div>
+
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:0.75rem; padding-top:1rem; border-top:1px solid var(--border-light);">
+            <button type="submit" class="btn-primary" style="padding:0.7rem 1.5rem; font-size:0.95rem;">
+              <span>🚨</span>
+              <span>Submit Fire Report to Forest Cloud Dispatch</span>
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+    <!-- ========================================================
+         TAB 4: ADMIN VERIFICATION & INCIDENT COMMAND
+         ======================================================== -->
+    <div class="tab-pane" id="tabPane-admin">
+      <div class="admin-view-container">
+
+        <!-- Command Metric Stats -->
+        <div class="admin-stats-overview">
+          <div class="stat-metric-card">
+            <div class="stat-icon orange">⚠️</div>
+            <div class="stat-text">
+              <h4>Pending Verification</h4>
+              <div class="stat-number" id="metricPendingReports">1</div>
+            </div>
+          </div>
+
+          <div class="stat-metric-card">
+            <div class="stat-icon red">🔥</div>
+            <div class="stat-text">
+              <h4>Confirmed Fires</h4>
+              <div class="stat-number" id="metricConfirmedFires">0</div>
+            </div>
+          </div>
+
+          <div class="stat-metric-card">
+            <div class="stat-icon green">📡</div>
+            <div class="stat-text">
+              <h4>IoT Stations Online</h4>
+              <div class="stat-number" id="metricActiveStations">5 / 5 Online</div>
+            </div>
+          </div>
+
+          <div class="stat-metric-card">
+            <div class="stat-icon blue">🛡️</div>
+            <div class="stat-text">
+              <h4>Google Auth Session</h4>
+              <div class="stat-number" style="font-size:1.1rem; padding-top:4px;">OAuth 2.0 Valid</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Verification Split Workspace -->
+        <div class="verification-workspace">
+
+          <!-- Left: Incoming Citizen Reports Queue -->
+          <div class="reports-queue-card">
+            <div class="queue-header">
+              <h3>Incident Triage Queue (South India Range)</h3>
+              <span class="status-pill" style="font-size:0.7rem;">Live Queue</span>
+            </div>
+            <div class="queue-items-list" id="adminQueueList">
+              <!-- Populated dynamically via JS -->
+            </div>
+          </div>
+
+          <!-- Right: Side-by-side Inspection & Cross-Referencing Tool -->
+          <div class="verification-inspect-card">
+            <div class="inspect-header">
+              <div class="inspect-title">
+                <h3 id="inspectReportTitle">Sulthan Bathery Coffee Estate & Forest Border (INC-9481)</h3>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:3px;">
+                  Location: <span id="inspectLocation">Sulthan Bathery (Wayanad, Kerala)</span> | Coordinates: <span id="inspectCoords">11.6680° N, 76.2850° E</span>
+                </div>
+              </div>
+              <div id="inspectReportStatus">
+                <span class="role-pill admin" style="background:#fef3c7; color:#b45309;">⚠️ PENDING VERIFICATION</span>
+              </div>
+            </div>
+
+            <!-- Citizen Evidence Details -->
+            <div style="display:grid; grid-template-columns:220px 1fr; gap:1.25rem;">
+              <div>
+                <img id="inspectPhoto" src="assets/sample_report.jpg" alt="Eyewitness Fire Evidence" style="width:100%; height:140px; object-fit:cover; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px; text-align:center;">Uploaded Field Photo Evidence</div>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.85rem;">
+                <div><strong>Reporter:</strong> <span id="inspectReporter">Ramesh Kumar (Estate Plantation Supervisor)</span></div>
+                <div><strong>Field Notes:</strong> <span id="inspectNotes" style="color:var(--text-secondary);">Dry coffee pruning mulch and forest boundary trench brush caught fire near the Cheeral road border. Easterly wind is pushing heavy smoke toward plantation worker quarters. Immediate containment needed.</span></div>
+              </div>
+            </div>
+
+            <!-- Automated Sensor Corroboration Engine -->
+            <div class="sensor-correlation-box">
+              <div class="correlation-score-bar">
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <span style="font-size:1.1rem;">⚡</span>
+                  <div>
+                    <strong style="font-size:0.9rem;">IoT Sensor Fleet Cross-Reference Match</strong>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">Correlated with Station ST-204 telemetry inside 400m radius</div>
+                  </div>
+                </div>
+                <div class="score-badge" id="inspectScore">94.6%</div>
+              </div>
+
+              <div class="progress-track" style="margin-bottom:0.75rem;">
+                <div class="progress-fill" id="inspectScoreFill" style="width: 94.6%;"></div>
+              </div>
+
+              <div id="inspectSensorSummary">
+                <!-- Dynamically populated with nearby station sensor readings -->
+              </div>
+            </div>
+
+            <!-- Action Buttons for Verification -->
+            <div class="verification-actions-bar" id="inspectActionsBar">
+              <!-- Populated by JS based on incident status -->
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================================
+         TAB 5: CLOUD LOGS & IOT HARDWARE SPECS
+         ======================================================== -->
+    <div class="tab-pane" id="tabPane-cloud">
+      <div class="cloud-view-container">
+
+        <!-- Google Key & Cloud Architecture Configuration Card -->
+        <div class="cloud-config-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <div>
+              <h3 style="font-family:var(--font-heading); font-size:1.25rem; font-weight:700;">Google Cloud & Maps Authentication Config</h3>
+              <p style="font-size:0.82rem; color:var(--text-muted);">Secure API key injection and Google OAuth 2.0 session logging</p>
+            </div>
+            <button class="btn-secondary" onclick="PyroAuth.openAuthModal()">Edit Google Cloud Keys</button>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1rem; font-size:0.82rem;">
+            <div style="background:#f8fafc; padding:0.85rem; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+              <span style="color:var(--text-muted); display:block; font-size:0.72rem; font-weight:700;">GOOGLE MAPS API KEY</span>
+              <code style="color:var(--google-blue); font-weight:700;">AIzaSyD-WildfireProtected-Key2026</code>
+            </div>
+            <div style="background:#f8fafc; padding:0.85rem; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+              <span style="color:var(--text-muted); display:block; font-size:0.72rem; font-weight:700;">GOOGLE OAUTH 2.0 CLIENT ID</span>
+              <code style="color:#0f172a;">109382109481920831092.apps.googleusercontent.com</code>
+            </div>
+            <div style="background:#f8fafc; padding:0.85rem; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+              <span style="color:var(--text-muted); display:block; font-size:0.72rem; font-weight:700;">MQTT CLOUD BROKER</span>
+              <code style="color:var(--safe-green); font-weight:700;">mqtts://cloud.pyroguard.io:8883 (TLS 1.3)</code>
+            </div>
+          </div>
+        </div>
+
+        <!-- IoT Physical Hardware Schematics & Wiring Blueprint -->
+        <div class="cloud-config-card">
+          <h3 style="font-family:var(--font-heading); font-size:1.25rem; font-weight:700; margin-bottom:0.4rem;">
+            Outdoor IoT Sensor Node Hardware Blueprint (ESP32-WROOM-32)
+          </h3>
+          <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem;">
+            Schematics and pinout mapping for deploying SHT31, DS18B20, PM2.5, Anemometer, and PTZ Cam on outdoor solar nodes.
+          </p>
+
+          <div style="overflow-x:auto;">
+            <table class="logs-table">
+              <thead>
+                <tr>
+                  <th>Sensor Name</th>
+                  <th>Recommended Hardware Component</th>
+                  <th>Interface Bus</th>
+                  <th>ESP32 Pinout</th>
+                  <th>Outdoor Weatherproofing Requirement</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Air Temp & Humidity</strong></td>
+                  <td>Sensirion SHT31-DIS (Digital)</td>
+                  <td>I2C Protocol</td>
+                  <td>SDA: GPIO 21 | SCL: GPIO 22</td>
+                  <td>Must be housed inside Louvered Solar Radiation Shield</td>
+                </tr>
+                <tr>
+                  <td><strong>Soil & Surface Temp</strong></td>
+                  <td>Dallas DS18B20 Waterproof Probe</td>
+                  <td>1-Wire Bus</td>
+                  <td>Data: GPIO 4 (with 4.7kΩ pull-up to 3.3V)</td>
+                  <td>IP68 hermetic stainless steel probe buried at 15cm</td>
+                </tr>
+                <tr>
+                  <td><strong>Particulate Smoke</strong></td>
+                  <td>Plantower PMS5003 / SDS011 Laser Dust</td>
+                  <td>UART Serial</td>
+                  <td>RX: GPIO 16 | TX: GPIO 17</td>
+                  <td>Weather-protected downward air intake with heated mesh</td>
+                </tr>
+                <tr>
+                  <td><strong>Wind Anemometer</strong></td>
+                  <td>WS68 Wireless Solar Anemometer</td>
+                  <td>Pulse / Analog / 433MHz</td>
+                  <td>Pulse Counter: GPIO 14 (Interrupt)</td>
+                  <td>UV-stabilized resin cups, sealed ball bearings</td>
+                </tr>
+                <tr>
+                  <td><strong>Radiometric Thermal Cam</strong></td>
+                  <td>Thermal PTZ 640×512 (15km)</td>
+                  <td>RTSP / IP over 4G-LTE</td>
+                  <td>Network / Ethernet Gateway Uplink</td>
+                  <td>IP67 outdoor PTZ dome enclosure with built-in defogger</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Cloud Audit Logs Table -->
+        <div class="logs-table-card">
+          <div class="table-header-row">
+            <div>
+              <h3 style="font-family:var(--font-heading); font-size:1.15rem; font-weight:700;">Google Cloud Audit & Event Logs</h3>
+              <p style="font-size:0.78rem; color:var(--text-muted);">Real-time cryptographic audit trail of user sessions, alerts, and telemetry spikes</p>
+            </div>
+            <button class="btn-secondary" onclick="PyroAuth.exportLogsJson()" style="font-size:0.78rem;">
+              📥 Export Logs (JSON)
+            </button>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table class="logs-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Severity</th>
+                  <th>Origin Source</th>
+                  <th>Google User</th>
+                  <th>Event Log Description</th>
+                </tr>
+              </thead>
+              <tbody id="cloudLogsTableBody">
+                <!-- Dynamically populated via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+  </div> <!-- End of #appDashboardContainer -->
+
+  <!-- ========================================================
+       MODALS
+       ======================================================== -->
+
+  <!-- Google Auth & API Key Modal -->
+  <div class="modal-backdrop" id="googleAuthModal">
+    <div class="modal-dialog" style="max-width: 560px;">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+          <svg class="google-icon-svg" viewBox="0 0 24 24" style="width:22px; height:22px;">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <h3 style="font-size:1.15rem;">Google Account Authentication</h3>
+        </div>
+        <button class="modal-close-btn" onclick="PyroAuth.closeAuthModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.5rem;">
+          Sign in to access disaster command controls, verify citizen fire accident reports, and broadcast emergency alerts.
+        </p>
+
+        <!-- 1-Click Fast Google Sign-In Button -->
+        <button type="button" class="btn-primary" style="width:100%; justify-content:center; background:#ffffff; color:#0f172a; border:1px solid #cbd5e1; box-shadow:var(--shadow-sm); padding:0.7rem; font-size:0.92rem;" onclick="PyroAuth.loginWithGoogle('admin')">
+          <svg class="google-icon-svg" viewBox="0 0 24 24" style="width:18px; height:18px;">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span style="font-weight:700;">Continue with Google (1-Click OAuth)</span>
+        </button>
+
+        <div style="display:flex; align-items:center; gap:0.75rem; margin:0.75rem 0;">
+          <div style="flex:1; height:1px; background:#e2e8f0;"></div>
+          <span style="font-size:0.72rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Select Demo Profile</span>
+          <div style="flex:1; height:1px; background:#e2e8f0;"></div>
+        </div>
+
+        <!-- Demo Profiles Grid -->
+        <div class="demo-accounts-grid">
+          <div class="demo-account-card selected" data-profile="admin" onclick="PyroAuth.selectDemoProfile('admin')">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong style="font-size:0.85rem; color:var(--text-main);">🛡️ DFO / Incident Commander</strong>
+              <span class="role-pill admin">ADMIN</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">DFO Ananya Rao (Nilgiri Biosphere Ops)</div>
+            <div style="font-size:0.7rem; color:#2563eb;">Full Verification & Siren Dispatch</div>
+          </div>
+
+          <div class="demo-account-card" data-profile="citizen" onclick="PyroAuth.selectDemoProfile('citizen')">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong style="font-size:0.85rem; color:var(--text-main);">👨‍🌾 Plantation Supervisor</strong>
+              <span class="role-pill citizen">CITIZEN</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">Ramesh Kumar (Wayanad Estate)</div>
+            <div style="font-size:0.7rem; color:var(--safe-green);">Eyewitness Incident Reporting</div>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:0.75rem; margin:0.75rem 0;">
+          <div style="flex:1; height:1px; background:#e2e8f0;"></div>
+          <span style="font-size:0.72rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Account Details & API Key</span>
+          <div style="flex:1; height:1px; background:#e2e8f0;"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="loginEmailInput">Google Account Email</label>
+          <input type="email" id="loginEmailInput" class="form-control" value="a.rao@forest.gov.in">
+        </div>
+
+        <div class="form-group">
+          <label for="loginRoleSelect">Assigned System Role</label>
+          <select id="loginRoleSelect" class="form-control">
+            <option value="admin">DFO / Forest Range Officer (Admin)</option>
+            <option value="citizen">Estate Supervisor / Field Observer (Citizen)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="modalGoogleApiKey">Google Maps & Cloud API Key (Optional Override)</label>
+          <input type="text" id="modalGoogleApiKey" class="form-control" value="AIzaSyD-SouthIndia-WesternGhats2026">
+          <span style="font-size:0.7rem; color:var(--text-muted);">Used for Google Satellite, Geocoding, and Cloud Logging streams.</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" onclick="PyroAuth.closeAuthModal()">Cancel</button>
+        <button type="button" class="btn-primary" onclick="PyroAuth.submitManualLogin()">
+          <span>🔑</span>
+          <span>Sign In & Authenticate</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report Submitted Success Modal -->
+  <div class="modal-backdrop" id="reportSuccessModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 style="color:var(--safe-green);">✅ Fire Report Received</h3>
+        <button class="modal-close-btn" onclick="document.getElementById('reportSuccessModal').classList.remove('open')">✕</button>
+      </div>
+      <div class="modal-body" id="reportSuccessDetails">
+        <!-- Populated via JS -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" onclick="document.getElementById('reportSuccessModal').classList.remove('open'); PyroApp.switchTab('map');">
+          View on Map
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tactical Fire Incident Approval Workflow Modal -->
+  <div class="modal-backdrop" id="fireApprovalWorkflowModal">
+    <div class="modal-dialog" style="max-width: 680px;">
+      <div class="modal-header" style="background:#fee2e2; border-bottom:1.5px solid #fca5a5;">
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+          <span style="font-size:1.4rem;">🚨</span>
+          <div>
+            <h3 style="font-size:1.15rem; color:#b91c1c;">Official Fire Incident Approval & Verification</h3>
+            <p style="font-size:0.75rem; color:#7f1d1d; margin:0;">Indian Forest Service & NDMA Incident Command Authorization Protocol</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="PyroAdmin.closeApprovalModal()">✕</button>
+      </div>
+
+      <div class="modal-body approval-workflow-box">
+        <div style="background:#f8fafc; border:1px solid var(--border-light); padding:0.75rem 1rem; border-radius:var(--radius-md);">
+          <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Incident Under Verification</div>
+          <div style="font-size:1.05rem; font-weight:800; color:var(--text-main);" id="approvalIncidentTargetName">Sulthan Bathery Coffee Estate & Forest Border (#INC-9481)</div>
+          <div style="font-size:0.78rem; color:var(--text-secondary); margin-top:2px;" id="approvalIncidentCoords">11.6680° N, 76.2850° E (Western Ghats Nilgiri Corridor)</div>
+        </div>
+
+        <!-- Step 1: Telemetry Corroboration Checklist -->
+        <div class="approval-step-card">
+          <div class="approval-step-header">
+            <span class="approval-step-number">1</span>
+            <span>Multi-Sensor Fleet Telemetry Corroboration</span>
+          </div>
+          <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.65rem;">
+            Verify telemetry readings received from nearest sensor station (ST-204 Wayanad) within 400m perimeter:
+          </p>
+          <div class="checklist-items-grid">
+            <label class="approval-checkbox-label">
+              <input type="checkbox" checked id="chkSht31">
+              <div>
+                <strong>SHT31 Ambient Air</strong>
+                <div style="font-size:0.72rem; color:#ea580c;" id="chkTelemetryAir">35.6°C (Shielded Air Spike)</div>
+              </div>
+            </label>
+            <label class="approval-checkbox-label">
+              <input type="checkbox" checked id="chkDs18">
+              <div>
+                <strong>DS18B20 Soil Probe</strong>
+                <div style="font-size:0.72rem; color:#ea580c;" id="chkTelemetrySoil">39.8°C (15cm Subsurface)</div>
+              </div>
+            </label>
+            <label class="approval-checkbox-label">
+              <input type="checkbox" checked id="chkPm25">
+              <div>
+                <strong>PM2.5 Smoke Dust</strong>
+                <div style="font-size:0.72rem; color:#dc2626;" id="chkTelemetrySmoke">92.4 µg/m³ Laser Counter</div>
+              </div>
+            </label>
+            <label class="approval-checkbox-label">
+              <input type="checkbox" checked id="chkThermal">
+              <div>
+                <strong>Thermal 15km PTZ</strong>
+                <div style="font-size:0.72rem; color:#dc2626;" id="chkTelemetryTherm">172.0°C Radiometric Spot</div>
+              </div>
+            </label>
+            <label class="approval-checkbox-label">
+              <input type="checkbox" checked id="chkAiVision">
+              <div>
+                <strong>AI Vision Inference</strong>
+                <div style="font-size:0.72rem; color:#ea580c;" id="chkTelemetryAi">86% Flame / 93% Plume</div>
+              </div>
+            </label>
+            <label class="approval-checkbox-label">
+              <input type="checkbox" checked id="chkWind">
+              <div>
+                <strong>WS68 Anemometer</strong>
+                <div style="font-size:0.72rem; color:#0369a1;" id="chkTelemetryWind">29.5 km/h E (Spread Vector)</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Step 2: Fire Hazard Severity Classification -->
+        <div class="approval-step-card">
+          <div class="approval-step-header">
+            <span class="approval-step-number">2</span>
+            <span>Hazard Urgency & Threat Classification</span>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label for="approvalSeverityTier" style="font-size:0.78rem; font-weight:600; display:block; margin-bottom:4px;">Official Hazard Severity Tier</label>
+            <select id="approvalSeverityTier" class="form-control" style="font-size:0.85rem;">
+              <option value="Tier 2: High Hazard - Agro-Forest Border Fire">Tier 2: High Hazard - Agro-Forest Border Fire (Spreading towards Plantation Quarters)</option>
+              <option value="Tier 3: Catastrophic Wildfire - Forest Canopy Conflagration">Tier 3: Catastrophic Wildfire - Forest Canopy Conflagration (Immediate Mandatory Evacuation)</option>
+              <option value="Tier 1: Moderate Hazard - Contained Brush Ground Crawl">Tier 1: Moderate Hazard - Contained Brush Ground Crawl (&lt; 1m Flame)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Step 3: Tactical Emergency Resource Dispatch -->
+        <div class="approval-step-card">
+          <div class="approval-step-header">
+            <span class="approval-step-number">3</span>
+            <span>Emergency Tactical Actions to Authorize</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.8rem;">
+            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+              <input type="checkbox" checked id="chkDispatchTenders">
+              <span>🚒 <strong>Deploy 2x Forest Quick Response Fire Tenders (QRT)</strong> from Sulthan Bathery &amp; Gundlupet Outposts</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+              <input type="checkbox" checked id="chkDispatchDrone">
+              <span>🚁 <strong>Launch Autonomous Recon Drone #DR-08</strong> with live optical &amp; FLIR thermal downlink</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+              <input type="checkbox" checked id="chkSoundSiren">
+              <span>🚨 <strong>Activate Tactical Audio Siren</strong> &amp; broadcast 600m evacuation perimeter</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+              <input type="checkbox" checked id="chkSendSMS">
+              <span>📲 <strong>Broadcast Emergency Push Notification &amp; SMS</strong> to 142 registered estate workers</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+              <input type="checkbox" checked id="chkAlertNDMA">
+              <span>🏛️ <strong>Transmit Official Flash Alert</strong> to District Disaster Management Authority (DDMA Wayanad)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Step 4: Digital Incident Commander Sign-off -->
+        <div class="approval-signoff-box">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-size:0.72rem; color:#b45309; font-weight:800; text-transform:uppercase;">Step 4: Digital Incident Commander Sign-Off</div>
+              <div style="font-size:0.95rem; font-weight:800; color:#0f172a;" id="approvalOfficerName">DFO Ananya Rao</div>
+              <div style="font-size:0.72rem; color:#64748b;">Indian Forest Service (IFS) | Divisional Forest Officer, Nilgiri Biosphere Command</div>
+            </div>
+            <div style="text-align:right;">
+              <span class="role-pill admin">DIGITAL SEAL READY</span>
+              <div style="font-family:monospace; font-size:0.7rem; color:#2563eb; margin-top:2px;" id="approvalAuthToken">IAM-AUTH-KL-TN-778912</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer" style="background:#f8fafc; border-top:1px solid var(--border-light); justify-content:space-between;">
+        <button type="button" class="btn-secondary" onclick="PyroAdmin.closeApprovalModal()">Cancel Approval</button>
+        <button type="button" class="btn-primary" style="background:linear-gradient(135deg, #dc2626, #b91c1c); padding:0.75rem 1.75rem; font-size:0.95rem; box-shadow:0 4px 14px rgba(220,38,38,0.35);" onclick="PyroAdmin.executeApproval()">
+          <span>🛡️</span>
+          <span>Officially Approve Incident &amp; Issue Red Alert</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Official Dispatch Order & Incident Approval Certificate Modal -->
+  <div class="modal-backdrop" id="dispatchOrderCertificateModal">
+    <div class="modal-dialog" style="max-width: 620px;">
+      <div class="modal-body" style="padding:1.5rem;">
+        <div class="dispatch-certificate-card">
+          <div class="cert-header-row">
+            <div class="cert-title-group">
+              <div style="font-size:0.65rem; font-weight:800; letter-spacing:0.08em; color:#64748b; text-transform:uppercase;">Government of India • Ministry of Environment, Forest &amp; Climate Change</div>
+              <h2>EMERGENCY WILDFIRE DISPATCH ORDER</h2>
+              <p>State Disaster Management Authority &amp; Joint Western Ghats Fire Response Cell</p>
+            </div>
+            <div class="cert-seal">
+              <span>NDMA</span>
+              <span>OFFICIAL</span>
+              <span>DISPATCH</span>
+            </div>
+          </div>
+
+          <div style="background:#fee2e2; border-left:4px solid #dc2626; padding:0.65rem 0.85rem; border-radius:4px; font-size:0.82rem; color:#b91c1c; font-weight:600;">
+            ✅ OFFICIAL STATUS: INCIDENT APPROVED &amp; CONFIRMED ACTIVE FIRE. EMERGENCY DISPATCH IN PROGRESS.
+          </div>
+
+          <div class="cert-details-grid">
+            <div class="cert-field-box">
+              <span class="cert-field-label">Order Reference ID</span>
+              <span class="cert-field-value" id="certOrderNumber" style="font-family:monospace; color:#2563eb;">GO-KL-TN-2026-F9481</span>
+            </div>
+            <div class="cert-field-box">
+              <span class="cert-field-label">Dispatch Timestamp</span>
+              <span class="cert-field-value" id="certTimestamp">28 Oct 2026, 12:45 PM IST</span>
+            </div>
+            <div class="cert-field-box" style="grid-column: span 2;">
+              <span class="cert-field-label">Confirmed Incident Target &amp; Coordinates</span>
+              <span class="cert-field-value" id="certTargetIncident">Sulthan Bathery Coffee Estate &amp; Forest Border [11.6680° N, 76.2850° E]</span>
+            </div>
+            <div class="cert-field-box">
+              <span class="cert-field-label">Approved Hazard Tier</span>
+              <span class="cert-field-value" id="certSeverityTier" style="color:#ea580c;">Tier 2: High Hazard Border Fire</span>
+            </div>
+            <div class="cert-field-box">
+              <span class="cert-field-label">Evacuation Perimeter</span>
+              <span class="cert-field-value" style="color:#dc2626;">600m Mandatory Radius</span>
+            </div>
+            <div class="cert-field-box" style="grid-column: span 2;">
+              <span class="cert-field-label">Authorized Field Resources &amp; Deployed Fleet</span>
+              <span class="cert-field-value" style="font-size:0.78rem;">
+                • 2x Forest Quick Response Fire Tenders (Wayanad Fleet #01 &amp; #03)<br>
+                • 1x Autonomous Recon Drone #DR-08 with FLIR Radiometric Downlink<br>
+                • Tactical Siren Station #04 Activated<br>
+                • SMS Emergency Warning Sent to 142 Estate Workers &amp; Villagers
+              </span>
+            </div>
+            <div class="cert-field-box" style="grid-column: span 2;">
+              <span class="cert-field-label">Incident Commander Digital Authorization</span>
+              <span class="cert-field-value" id="certOfficerSignature">DFO Ananya Rao (Divisional Forest Officer / Incident Commander)</span>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; padding-top:0.75rem; border-top:1px solid #e2e8f0;">
+            <button type="button" class="btn-secondary" onclick="window.print()" style="font-size:0.8rem;">
+              🖨️ Print Dispatch Order
+            </button>
+            <button type="button" class="btn-primary" onclick="PyroAdmin.closeDispatchCertificate()" style="padding:0.6rem 1.5rem;">
+              <span>🗺️</span>
+              <span>View Live Emergency Response on Map</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Scripts -->
+  <script src="js/state.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/sensors.js"></script>
+  <script src="js/reports.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
